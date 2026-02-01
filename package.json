@@ -48,5 +48,8 @@
     "host_permissions": [
       "<all_urls>"
     ]
+  },
+  "optionalDependencies": {
+    "@parcel/watcher-linux-x64-glibc": "^2.5.6"
   }
 }
