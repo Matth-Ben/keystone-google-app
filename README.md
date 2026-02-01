@@ -26,6 +26,18 @@ pnpm build
 npm run build
 ```
 
+### Building for specific browsers
+
+The default build targets Chrome (MV3). You can also build for Firefox and Safari:
+
+```bash
+# Firefox (MV2)
+npm run build:firefox
+
+# Safari (MV2)
+npm run build:safari
+```
+
 This should create a production bundle for your extension, ready to be zipped and published to the stores.
 
 ## Submit to the webstores
