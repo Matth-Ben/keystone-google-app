@@ -30,6 +30,28 @@ export function VaultView() {
     const [isAddingSecret, setIsAddingSecret] = useState(false)
     const [selectedSecret, setSelectedSecret] = useState<SecretWithRelations | null>(null)
 
+    // Persistence Logic
+    useEffect(() => {
+        // Load last selected secret ID
+        chrome.storage.local.get("lastSelectedSecretId", (result) => {
+            const lastId = result.lastSelectedSecretId
+            if (lastId && secrets.length > 0) {
+                const found = secrets.find(s => s.id === lastId)
+                if (found) setSelectedSecret(found)
+            }
+        })
+    }, [secrets]) // Run when secrets are loaded
+
+    const handleSelectSecret = (secret: SecretWithRelations | null) => {
+        setSelectedSecret(secret)
+        if (secret) {
+            chrome.storage.local.set({ lastSelectedSecretId: secret.id })
+            setIsAddingSecret(false)
+        } else {
+            chrome.storage.local.remove("lastSelectedSecretId")
+        }
+    }
+
     useEffect(() => {
         // 1. Get User
         supabase.auth.getUser().then(({ data }) => {
@@ -170,7 +192,7 @@ export function VaultView() {
                     </div>
                     <div className="flex gap-1">
                         {/* Add Secret Button Placeholder */}
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setIsAddingSecret(true); setSelectedSecret(null); }} title="Add Secret">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setIsAddingSecret(true); handleSelectSecret(null); }} title="Add Secret">
                             <span className="text-xl font-light leading-none">+</span>
                         </Button>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleLogout} title="Sign Out">
@@ -217,7 +239,7 @@ export function VaultView() {
                                             <SecretItem
                                                 key={secret.id}
                                                 secret={secret}
-                                                onClick={() => { setSelectedSecret(secret); setIsAddingSecret(false); }}
+                                                onClick={() => handleSelectSecret(secret)}
                                             />
                                         ))}
                                     </div>
@@ -237,7 +259,7 @@ export function VaultView() {
                                             <SecretItem
                                                 key={secret.id}
                                                 secret={secret}
-                                                onClick={() => setSelectedSecret(secret)}
+                                                onClick={() => handleSelectSecret(secret)}
                                             />
                                         ))}
                                     </div>
@@ -266,7 +288,7 @@ export function VaultView() {
                 ) : selectedSecret ? (
                     <SecretDetail
                         secret={selectedSecret}
-                        onBack={() => setSelectedSecret(null)}
+                        onBack={() => handleSelectSecret(null)}
                     />
                 ) : (
                     <div className="hidden md:flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center bg-muted/10">

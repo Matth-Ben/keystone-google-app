@@ -25,13 +25,28 @@ export function SecretDetail({ secret, onBack }: SecretDetailProps) {
     const [showPassword, setShowPassword] = useState(false)
     const [decrypted, setDecrypted] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
+    const [imgError, setImgError] = useState(false)
 
     // Reset state when secret changes
     useEffect(() => {
         setShowPassword(false)
         setDecrypted(null)
         setLoading(false)
+        setImgError(false)
     }, [secret.id])
+
+    // Helper to extract domain for favicon
+    const getDomain = (url: string) => {
+        try {
+            return new URL(url).hostname
+        } catch {
+            return null
+        }
+    }
+
+    const domain = secret.url ? getDomain(secret.url) : null
+    const faviconUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=64` : null
+
 
     const togglePassword = async () => {
         if (showPassword) {
@@ -79,15 +94,37 @@ export function SecretDetail({ secret, onBack }: SecretDetailProps) {
     return (
         <div className="h-full flex flex-col bg-background animate-in slide-in-from-right-5 duration-200">
             {/* Header */}
-            <div className="flex items-center gap-2 p-4 border-b">
+            <div className="flex items-center gap-3 p-4 border-b">
                 <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden shrink-0">
                     <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <div className="flex bg-muted rounded-md h-10 w-10 shrink-0 items-center justify-center text-primary/70">
-                    {secret.url ? <Globe className="h-5 w-5" /> : <Key className="h-5 w-5" />}
+
+                {/* Icon (Favicon or Default) */}
+                <div className="flex bg-white border border-border/50 rounded-md h-10 w-10 shrink-0 items-center justify-center overflow-hidden">
+                    {faviconUrl && !imgError ? (
+                        <img
+                            src={faviconUrl}
+                            alt="Icon"
+                            className="h-6 w-6 object-contain"
+                            onError={() => setImgError(true)}
+                        />
+                    ) : secret.url ? (
+                        <Globe className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                        <Key className="h-5 w-5 text-muted-foreground" />
+                    )}
                 </div>
+
                 <div className="min-w-0 flex-1">
-                    <h2 className="text-lg font-semibold truncate">{secret.title}</h2>
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-semibold truncate">{secret.title}</h2>
+                        {/* Type Badge in Header */}
+                        {secret.type && secret.type !== 'other' && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary uppercase font-bold tracking-wider shrink-0">
+                                {secret.type}
+                            </span>
+                        )}
+                    </div>
                     <div className="text-sm text-muted-foreground truncate">
                         {secret.clients?.name}
                     </div>
@@ -144,15 +181,6 @@ export function SecretDetail({ secret, onBack }: SecretDetailProps) {
                                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(secret.url || "")}>
                                     <Copy className="h-3 w-3" />
                                 </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {secret.type && secret.type !== 'other' && (
-                        <div className="space-y-1">
-                            <label className="text-xs font-medium text-muted-foreground">Type</label>
-                            <div className="text-sm capitalize border p-2 rounded-md bg-muted/20 inline-block px-3">
-                                {secret.type}
                             </div>
                         </div>
                     )}
