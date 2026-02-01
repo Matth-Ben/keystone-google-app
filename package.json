@@ -50,6 +50,7 @@
     ]
   },
   "optionalDependencies": {
-    "@parcel/watcher-linux-x64-glibc": "^2.5.6"
+    "@parcel/watcher-linux-x64-glibc": "^2.5.6",
+    "lightningcss-linux-x64-gnu": "^1.31.1"
   }
 }
